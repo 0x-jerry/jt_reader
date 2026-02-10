@@ -3,14 +3,14 @@ use anyhow::{Result, bail};
 use crate::{
     jt_data::{
         JtCompressedSegment, JtData, jt_element_header::JtElementHeader,
-        jt_graph_element::JtGraphElement, jt_logic_element_header::JtLogicElementHeader,
+        jt_graph_element::JtGraphElement, jt_logic_element_header::JtLogicElementHeaderZLib,
     },
     jt_reader::JtReader,
 };
 
 #[derive(Debug, Default)]
 pub struct JtLSGSegment {
-    pub header: JtLogicElementHeader,
+    pub header: JtLogicElementHeaderZLib,
 
     pub graph_elements: Vec<JtGraphElement>,
     // pub property_atom_elements: Vec<JtPropertyAtomElement>,
@@ -24,8 +24,12 @@ impl JtCompressedSegment for JtLSGSegment {
 impl JtLSGSegment {
     /// Return true if the end of elements marker is read.
     fn read_graph_element(&mut self, reader: &mut JtReader) -> Result<bool> {
+        let element_length = reader.read_i32()?;
         let element_header = JtElementHeader::read(reader)?;
-        println!("element header: {:?}", element_header);
+        println!(
+            "element length: {}, element header: {:?}",
+            element_length, element_header
+        );
 
         let value = JtGraphElement::read(reader, element_header.object_type_id)?;
 
@@ -48,7 +52,7 @@ impl JtData for JtLSGSegment {
     fn read(reader: &mut JtReader) -> Result<Self> {
         let mut result: Self = Default::default();
 
-        let mut logic_header = JtLogicElementHeader::read(reader, Self::IS_COMPRESSED)?;
+        let logic_header = JtLogicElementHeaderZLib::read(reader)?;
 
         let reader = if logic_header.is_zlib_compressed() {
             let size = size_of_val(&logic_header.compression_algorithm);
@@ -57,10 +61,6 @@ impl JtData for JtLSGSegment {
         } else {
             reader
         };
-
-        if Self::IS_COMPRESSED {
-            logic_header.read_length(reader)?;
-        }
 
         println!("logic header data: {:?}", logic_header);
 

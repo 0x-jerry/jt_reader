@@ -3,7 +3,7 @@ use anyhow::{Ok, Result};
 use crate::{
     jt_data::{
         JtData, jt_base_type::JtBaseType, jt_element_header::JtElementHeader,
-        jt_logic_element_header::JtLogicElementHeader,
+        jt_logic_element_header::JtLogicElementHeaderZLib,
         jt_partition_node_element::JtPartitionNodeElement, jt_shape::JtShape,
     },
     jt_reader::JtReader,
@@ -17,26 +17,23 @@ pub enum JtSegmentData {
 }
 
 impl JtSegmentData {
-    pub fn read(reader: &mut JtReader, is_zlib_applyied: bool) -> Result<Self> {
-        if let Some(r) = Self::read_optional(reader, is_zlib_applyied)? {
+    pub fn read(reader: &mut JtReader) -> Result<Self> {
+        if let Some(r) = Self::read_optional(reader)? {
             return Ok(r);
         }
 
         Ok(JtSegmentData::None)
     }
 
-    pub fn read_optional(reader: &mut JtReader, is_zlib_applied: bool) -> Result<Option<Self>> {
-        let mut logic_header = JtLogicElementHeader::read(reader, is_zlib_applied)?;
+    pub fn read_optional(reader: &mut JtReader) -> Result<Option<Self>> {
+        // todo, check if it is compressed
+        let logic_header = JtLogicElementHeaderZLib::read(reader)?;
 
         let reader = if logic_header.is_zlib_compressed() {
             &mut reader.inflate(logic_header.compression_data_length as usize)?
         } else {
             reader
         };
-
-        if logic_header.is_zlib_compressed() {
-            logic_header.read_length(reader)?;
-        }
 
         println!("logic element header: {:?}", logic_header);
 

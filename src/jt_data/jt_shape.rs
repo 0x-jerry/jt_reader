@@ -4,7 +4,6 @@ use uuid::Uuid;
 use crate::{
     jt_data::{
         JtData, JtObjectTypeID, jt_base_shape_lod_data::JtBaseShapeLODData,
-        jt_logic_element_header::JtLogicElementHeader,
         jt_topo_mesh_compressed_lod_data::JtTopoMeshCompressedLODData,
         jt_topo_mesh_topologically_compressed_lod_data::JtTopoMeshTopologicallyCompressedLODData,
         jt_vertex_bindings::JtVertexBindings, jt_vertex_shape_lod_data::JtVertexShapeLODData,
@@ -68,7 +67,7 @@ impl JtObjectTypeID for JtBaseShapeLOD {
 
 impl JtData for JtBaseShapeLOD {
     fn read(reader: &mut JtReader) -> Result<Self> {
-        let _logic_element_header = JtLogicElementHeader::read(reader, false)?;
+        let _element_length = reader.read_i32()?;
         let version = JtBaseShapeLODData::read(reader)?.version;
 
         Ok(Self { version })
@@ -93,7 +92,7 @@ impl JtObjectTypeID for JtVertexShapeLOD {
 
 impl JtData for JtVertexShapeLOD {
     fn read(reader: &mut JtReader) -> Result<Self> {
-        let _logic_element_header = JtLogicElementHeader::read(reader, false)?;
+        let _element_length = reader.read_i32()?;
         let _base_shape_lod_data = JtBaseShapeLODData::read(reader)?;
         let vertex_shape_data = JtVertexShapeLODData::read(reader)?;
 
@@ -125,7 +124,7 @@ impl JtObjectTypeID for JtTriStripSetShapeLOD {
 
 impl JtData for JtTriStripSetShapeLOD {
     fn read(reader: &mut JtReader) -> Result<Self> {
-        let _logic_element_header = JtLogicElementHeader::read(reader, false)?;
+        let _element_length = reader.read_i32()?;
 
         let vertex_shape_lod_data = JtVertexShapeLODData::read(reader)?;
 
