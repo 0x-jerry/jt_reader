@@ -1,9 +1,9 @@
-use anyhow::{Result, bail};
+use anyhow::Result;
 
 use crate::{
     jt_data::{
-        JtCompressedSegment, JtData, jt_element_header::JtElementHeader,
-        jt_graph_element::JtGraphElement, jt_logic_element_header::JtLogicElementHeaderZLib,
+        JtCompressedSegment, JtData, jt_logic_element_header::JtLogicElementHeaderZLib,
+        jt_lsg_element::JtLSGElement, jt_property_table_data::JtPropertyTableData,
     },
     jt_reader::JtReader,
 };
@@ -12,9 +12,8 @@ use crate::{
 pub struct JtLSGSegment {
     pub header: JtLogicElementHeaderZLib,
 
-    pub graph_elements: Vec<JtGraphElement>,
-    // pub property_atom_elements: Vec<JtPropertyAtomElement>,
-    // pub property_table: JtPropertyTable,
+    pub elements: Vec<JtLSGElement>,
+    pub property_table: JtPropertyTableData,
 }
 
 impl JtCompressedSegment for JtLSGSegment {
@@ -23,26 +22,14 @@ impl JtCompressedSegment for JtLSGSegment {
 
 impl JtLSGSegment {
     /// Return true if the end of elements marker is read.
-    fn read_graph_element(&mut self, reader: &mut JtReader) -> Result<bool> {
-        let element_length = reader.read_i32()?;
-        let element_header = JtElementHeader::read(reader)?;
-        println!(
-            "element length: {}, element header: {:?}",
-            element_length, element_header
-        );
+    fn read_element(&mut self, reader: &mut JtReader) -> Result<bool> {
+        let element = JtLSGElement::read(reader)?;
 
-        let value = JtGraphElement::read(reader, element_header.object_type_id)?;
-
-        println!("graph element: {:#?}", value);
-        if value.is_end() {
+        if element.is_end_marker_element() {
             return Ok(true);
         }
 
-        if value.is_none() {
-            bail!("Unimplemented object type: {:?}", element_header);
-        }
-
-        self.graph_elements.push(value);
+        self.elements.push(element);
 
         Ok(false)
     }
@@ -64,16 +51,13 @@ impl JtData for JtLSGSegment {
 
         println!("logic header data: {:?}", logic_header);
 
-        while !result.read_graph_element(reader)? {}
+        // Read graph elements.
+        while !result.read_element(reader)? {}
 
-        // loop {
-        //     let object_type_id = reader.read_uuid()?;
-        //     let graph_element = JtGraphElement::read(reader, object_type_id)?;
-        //     graph_elements.push(graph_element);
-        //     if graph_element == JtGraphElement::EndOfElements {
-        //         break;
-        //     }
-        // }
+        // Read property atom elements.
+        while !result.read_element(reader)? {}
+
+        result.property_table = JtPropertyTableData::read(reader)?;
 
         Ok(result)
     }

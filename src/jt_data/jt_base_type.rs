@@ -1,5 +1,6 @@
-#[derive(Debug)]
+#[derive(Debug, Default)]
 pub enum JtBaseType {
+    #[default]
     UnknownGraphNode = 255,
     BaseGraphNode = 0,
     GroupGraphNode = 1,

@@ -2,7 +2,7 @@ use anyhow::Result;
 
 use crate::{jt_data::JtData, jt_reader::JtReader};
 
-#[derive(Debug)]
+#[derive(Debug, Default)]
 pub struct Vec4<T> {
     pub data: [T; 4],
 }

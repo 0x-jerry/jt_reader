@@ -2,25 +2,12 @@ use anyhow::Result;
 use uuid::Uuid;
 
 use crate::{
-    jt_data::{JtData, JtObjectTypeID, jt_group_node_data::JtGroupNodeData},
+    jt_data::{
+        JtData, JtObjectTypeID, jt_count_range::JtCountRange, jt_group_node_data::JtGroupNodeData,
+    },
     jt_data_type::{bboxf32::BBoxF32, mbstring::MbString},
     jt_reader::JtReader,
 };
-
-#[derive(Debug, Default)]
-pub struct JtCountRange {
-    pub min: i32,
-    pub max: i32,
-}
-
-impl JtData for JtCountRange {
-    fn read(reader: &mut JtReader) -> Result<Self> {
-        Ok(Self {
-            min: reader.read_i32()?,
-            max: reader.read_i32()?,
-        })
-    }
-}
 
 #[derive(Debug, Default)]
 pub struct JtPartitionNodeElement {

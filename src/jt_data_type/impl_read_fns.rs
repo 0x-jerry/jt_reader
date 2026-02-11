@@ -5,7 +5,7 @@ use crate::{
     jt_data_type::{
         bboxf32::BBoxF32,
         jt_string::JtString,
-        jt_vec::{JtVec, JtVecI32, JtVecU32},
+        jt_vec::{JtVecI32, JtVecF32, JtVecU32},
         matrix::Mx4F32,
         mbstring::MbString,
         vec3::{CoordF32, CoordF64, RGB},
@@ -29,6 +29,7 @@ impl_jt_read_fn_macro!(JtString, read_jt_string);
 impl_jt_read_fn_macro!(MbString, read_mb_string);
 
 impl_jt_read_fn_macro!(JtVecI32, read_jt_vec_i32);
+impl_jt_read_fn_macro!(JtVecF32, read_jt_vec_f32);
 impl_jt_read_fn_macro!(JtVecU32, read_jt_vec_u32);
 impl_jt_read_fn_macro!(Mx4F32, read_mx4f32);
 

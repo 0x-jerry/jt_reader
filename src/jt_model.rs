@@ -4,7 +4,11 @@ use anyhow::{Result, bail};
 
 use crate::{
     jt_data::{
-        JtData, jt_file_header::JtFileHeader, jt_lsg_segment::JtLSGSegment, jt_segment::JtSegment,
+        JtData,
+        jt_file_header::JtFileHeader,
+        jt_lsg_element::{JtLSGElement, JtLSGElementValue},
+        jt_lsg_segment::JtLSGSegment,
+        jt_segment::JtSegment,
         jt_toc_entity::JtTocEntry,
     },
     jt_reader::JtReader,
@@ -72,7 +76,16 @@ impl JtModel {
         self.seek(lsg_segment_entry.offset as u64)?;
         let mut lsg_segment = JtSegment::read(&mut self.reader)?;
 
-        let _lsg_segment = lsg_segment.read_data_as::<JtLSGSegment>(&mut self.reader)?;
+        let lsg_segment = lsg_segment.read_data_as::<JtLSGSegment>(&mut self.reader)?;
+        for element in lsg_segment.elements {
+            match element.value {
+                JtLSGElementValue::TriStripSetShapeNode(node) => {
+                    // todo
+                }
+
+                _ => {}
+            }
+        }
 
         Ok(meshes)
     }
