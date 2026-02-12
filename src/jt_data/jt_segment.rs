@@ -46,21 +46,23 @@ pub struct JtSegment {
 
 impl JtData for JtSegment {
     fn read(reader: &mut JtReader) -> Result<Self> {
-        let header = JtSegmentHeader::read(reader)?;
-        let begin = reader.reader.stream_position()?;
+        let begin_pos = reader.reader.stream_position()?;
 
-        log::info!("segment header: {:?}, begin: {}", header, begin);
+        let header = JtSegmentHeader::read(reader)?;
+
+        log::info!("segment header: {:?}, begin: {}", header, begin_pos);
 
         let value = JtSegementValue::read(reader, &header.s_type)?;
 
-        let end = reader.reader.stream_position()?;
+        let end_pos = reader.reader.stream_position()?;
 
-        let length = end - begin + (16 + 4 + 4);
+        let read_len = end_pos - begin_pos;
+        let alignment_pad_len = header.length as i64 - read_len as i64;
         log::debug!(
-            "end: {}, segment length: {}, read length: {}",
-            end,
+            "segment length: {}, read length: {}, alignment pad length: {}",
             header.length,
-            length
+            read_len,
+            alignment_pad_len
         );
 
         Ok(Self { header, value })
