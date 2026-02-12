@@ -33,21 +33,28 @@ impl JtData for JtTopologicallyCompressedVertexRecords {
         result.quantization_parameters = JtQuantizationParameters::read(reader)?;
         result.number_of_topological_vertices = reader.read_i32()?;
 
-        if result.number_of_topological_vertices < 0 {
+        if result.number_of_topological_vertices <= 0 {
             return Ok(result);
         }
+        log::debug!(
+            "number_of_topological_vertices: {}",
+            result.number_of_topological_vertices
+        );
 
         result.number_of_vertex_attributes = reader.read_i32()?;
 
         if result.vertex_bindings.vertex_coord_components() > 0 {
+            log::debug!("reading vertex_coord_component");
             result.vertex_coordinate_array = Some(JtCompressedVertexCoordinateArray::read(reader)?);
         }
 
         if result.vertex_bindings.is_normal_binding() {
+            log::debug!("reading vertex_normal_component");
             result.vertex_normal_array = Some(JtCompressedVertexNormalArray::read(reader)?);
         }
 
         if result.vertex_bindings.color_components() > 0 {
+            log::debug!("reading vertex_color_component");
             result.vertex_color_array = Some(JtCompressedVertexColorArray::read(reader)?);
         }
 
@@ -55,6 +62,7 @@ impl JtData for JtTopologicallyCompressedVertexRecords {
             let mut vertex_texture_coordinate_array = Vec::new();
             for n in 0..8 {
                 if result.vertex_bindings.texture_coord_component(n) > 0 {
+                    log::debug!("reading vertex_texture_coord_component {}", n);
                     vertex_texture_coordinate_array.push(Some(
                         JtCompressedVertexTextureCoordinateArray::read(reader)?,
                     ));
@@ -69,6 +77,8 @@ impl JtData for JtTopologicallyCompressedVertexRecords {
         }
 
         if result.vertex_bindings.is_vertex_flag_binding() {
+            log::debug!("reading vertex_flag_component");
+
             result.vertex_flag_array = Some(JtCompressedVertexFlagArray::read(reader)?);
         }
 

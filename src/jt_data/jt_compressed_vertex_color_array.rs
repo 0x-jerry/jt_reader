@@ -3,6 +3,7 @@ use anyhow::Result;
 use crate::{
     jt_data::{JtData, jt_color_quantizer_data::JtColorQuantizerData},
     jt_data_type::jt_vec::JtVecU32,
+    jt_decode::jt_cdp2::JtCDP2Data,
     jt_reader::JtReader,
 };
 
@@ -31,15 +32,25 @@ impl JtData for JtCompressedVertexColorArray {
 
         if result.quantization_bits == 0 {
             for _ in 0..result.number_components {
-                result.vertex_color_exponents.push(JtVecU32::read(reader)?);
-                result.vertex_color_mantissae.push(JtVecU32::read(reader)?);
+                // todo, fix type
+                // result.vertex_color_exponents.push(JtVecU32::read(reader)?);
+                // result.vertex_color_mantissae.push(JtVecU32::read(reader)?);
+                JtCDP2Data::read(reader)?;
+                JtCDP2Data::read(reader)?;
             }
         } else {
             result.color_quantizer_data = JtColorQuantizerData::read(reader)?;
-            result.hue_or_red_codes = JtVecU32::read(reader)?;
-            result.sat_or_green_codes = JtVecU32::read(reader)?;
-            result.value_or_blue_codes = JtVecU32::read(reader)?;
-            result.alpha_codes = JtVecU32::read(reader)?;
+
+            // todo, fix type
+            // result.hue_or_red_codes = JtVecU32::read(reader)?;
+            // result.sat_or_green_codes = JtVecU32::read(reader)?;
+            // result.value_or_blue_codes = JtVecU32::read(reader)?;
+            // result.alpha_codes = JtVecU32::read(reader)?;
+
+            JtCDP2Data::read(reader)?;
+            JtCDP2Data::read(reader)?;
+            JtCDP2Data::read(reader)?;
+            JtCDP2Data::read(reader)?;
         }
 
         result.vertex_color_hash = reader.read_i32()?;

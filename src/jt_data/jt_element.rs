@@ -3,23 +3,13 @@ use uuid::Uuid;
 
 use crate::{
     jt_data::{
-        JtData, JtObjectTypeID, jt_element_header::JtElementHeader,
-        jt_floating_point_property_atom_element::JtFloatingPointPropertyAtomElement,
-        jt_geometric_transform_attribute_element::JtGeometricTransformAttributeElement,
-        jt_group_node_element::JtGroupNodeElement, jt_instance_node_element::JtInstanceNodeElement,
-        jt_late_loaded_property_atom_element::JtLateLoadedPropertyAtomElement,
-        jt_material_attribute_element::JtMaterialAttributeElement,
-        jt_meta_data_node_element::JtMetaDataNodeElement, jt_part_node_element::JtPartNodeElement,
-        jt_partition_node_element::JtPartitionNodeElement,
-        jt_range_lod_node_element::JtRangeLODNodeElement,
-        jt_string_property_atom_element::JtStringPropertyAtomElement,
-        jt_tri_strip_set_shape_node_element::JtTriStripSetShapeNodeElement,
+        JtData, JtObjectTypeID, jt_element_header::JtElementHeader, jt_floating_point_property_atom_element::JtFloatingPointPropertyAtomElement, jt_geometric_transform_attribute_element::JtGeometricTransformAttributeElement, jt_group_node_element::JtGroupNodeElement, jt_instance_node_element::JtInstanceNodeElement, jt_late_loaded_property_atom_element::JtLateLoadedPropertyAtomElement, jt_material_attribute_element::JtMaterialAttributeElement, jt_meta_data_node_element::JtMetaDataNodeElement, jt_part_node_element::JtPartNodeElement, jt_partition_node_element::JtPartitionNodeElement, jt_range_lod_node_element::JtRangeLODNodeElement, jt_string_property_atom_element::JtStringPropertyAtomElement, jt_tri_strip_set_shape_lod_element::JtTriStripSetShapeLODElement, jt_tri_strip_set_shape_node_element::JtTriStripSetShapeNodeElement
     },
     jt_reader::JtReader,
 };
 
 #[derive(Debug, Default)]
-pub enum JtLSGElementValue {
+pub enum JtElementValue {
     #[default]
     None,
     // Nodes
@@ -43,9 +33,12 @@ pub enum JtLSGElementValue {
     StringPropertyAtom(JtStringPropertyAtomElement),
     LateLoadedPropertyAtom(JtLateLoadedPropertyAtomElement),
     FloatingPointPropertyAtom(JtFloatingPointPropertyAtomElement),
+
+    // Other
+    TriStripSetShapeLOD(JtTriStripSetShapeLODElement),
 }
 
-impl JtLSGElementValue {
+impl JtElementValue {
     pub fn read(reader: &mut JtReader, object_type_id: Uuid) -> Result<Self> {
         let result = match object_type_id {
             // Nodes
@@ -102,6 +95,12 @@ impl JtLSGElementValue {
                 Self::FloatingPointPropertyAtom(element)
             }
 
+            // Other
+            JtTriStripSetShapeLODElement::OBJECT_TYPE_ID => {
+                let element = JtTriStripSetShapeLODElement::read(reader)?;
+                Self::TriStripSetShapeLOD(element)
+            }
+
             _ => Self::None,
         };
 
@@ -117,26 +116,26 @@ impl JtLSGElementValue {
 }
 
 #[derive(Debug, Default)]
-pub struct JtLSGElement {
+pub struct JtElement {
     pub length: i32,
     pub header: JtElementHeader,
-    pub value: JtLSGElementValue,
+    pub value: JtElementValue,
 }
 
-impl JtLSGElement {
+impl JtElement {
     pub fn read(reader: &mut JtReader) -> Result<Self> {
         let mut result: Self = Default::default();
 
         result.length = reader.read_i32()?;
 
         result.header = JtElementHeader::read(reader)?;
-        println!("length {}, reading {:?}", result.length, result.header);
+        log::trace!("length {}, reading {:?}", result.length, result.header);
 
         if result.is_end_marker_element() {
             return Ok(result);
         }
 
-        result.value = JtLSGElementValue::read(reader, result.header.object_type_id)?;
+        result.value = JtElementValue::read(reader, result.header.object_type_id)?;
 
         if result.value.is_none() {
             bail!("Unimplemented object type: {:?}", result.header);

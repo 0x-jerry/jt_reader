@@ -14,7 +14,7 @@ impl JtData for JtSegmentHeader {
     fn read(reader: &mut JtReader) -> Result<Self> {
         let segment_id = reader.read_guid()?;
         let segment_type = reader.read_i32()?;
-        let segment_type = SegmentType::new(segment_type);
+        let segment_type = SegmentType::from(segment_type)?;
         let segment_length = reader.read_i32()?;
 
         Ok(Self {

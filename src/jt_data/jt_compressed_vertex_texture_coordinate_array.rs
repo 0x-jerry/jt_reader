@@ -4,6 +4,7 @@ use crate::{
         jt_uniform_quantizer_data::JtUniformQuantizerData,
     },
     jt_data_type::jt_vec::JtVecU32,
+    jt_decode::jt_cdp2::JtCDP2Data,
     jt_reader::JtReader,
 };
 
@@ -32,18 +33,25 @@ impl JtData for JtCompressedVertexTextureCoordinateArray {
 
         if result.quantization_bits == 0 {
             for _ in 0..result.number_of_components {
-                result
-                    .vertex_texture_coord_exponents
-                    .push(JtVecU32::read(reader)?);
-                result
-                    .vertex_texture_coord_mantissae
-                    .push(JtVecU32::read(reader)?);
+                // todo, fix type
+                // result
+                //     .vertex_texture_coord_exponents
+                //     .push(JtVecU32::read(reader)?);
+                // result
+                //     .vertex_texture_coord_mantissae
+                //     .push(JtVecU32::read(reader)?);
+
+                JtCDP2Data::read(reader)?;
+                JtCDP2Data::read(reader)?;
             }
         } else {
             result.texture_quantizer_data =
                 JtTextureQuantizerData::read(reader, result.number_of_components as u32)?.data;
             for _ in 0..result.number_of_components {
-                result.texture_coord_codes.push(JtVecU32::read(reader)?);
+                // todo, fix type
+                // result.texture_coord_codes.push(JtVecU32::read(reader)?);
+
+                JtCDP2Data::read(reader)?;
             }
         }
 

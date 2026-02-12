@@ -6,7 +6,7 @@ use crate::{
     jt_data::{
         JtData,
         jt_file_header::JtFileHeader,
-        jt_lsg_element::{JtLSGElement, JtLSGElementValue},
+        jt_element::{JtElement, JtElementValue},
         jt_lsg_segment::JtLSGSegment,
         jt_segment::JtSegment,
         jt_toc_entity::JtTocEntry,
@@ -63,28 +63,9 @@ impl JtModel {
 
         let toc = self.toc.clone();
 
-        let lsg_segment_entry = toc
-            .iter()
-            .find(|t| t.segment_id == self.header.lsg_segment_id);
-
-        if lsg_segment_entry.is_none() {
-            bail!("Can not find LSG segment data");
-        }
-
-        let lsg_segment_entry = lsg_segment_entry.unwrap();
-
-        self.seek(lsg_segment_entry.offset as u64)?;
-        let mut lsg_segment = JtSegment::read(&mut self.reader)?;
-
-        let lsg_segment = lsg_segment.read_data_as::<JtLSGSegment>(&mut self.reader)?;
-        for element in lsg_segment.elements {
-            match element.value {
-                JtLSGElementValue::TriStripSetShapeNode(node) => {
-                    // todo
-                }
-
-                _ => {}
-            }
+        for entry in toc {
+            self.seek(entry.offset as u64)?;
+            let _segment = JtSegment::read(&mut self.reader)?;
         }
 
         Ok(meshes)

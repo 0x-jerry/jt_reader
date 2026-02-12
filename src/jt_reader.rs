@@ -1,6 +1,7 @@
-use anyhow::Result;
+use anyhow::{Result, bail};
 use byteorder::ReadBytesExt;
 use flate2::read::ZlibDecoder;
+use log::info;
 use std::{
     fs::File,
     io::{BufReader, Cursor, Read, Seek, SeekFrom},
@@ -37,13 +38,9 @@ impl JtReader {
         let mut buf = vec![0u8; length];
         self.read_exact(&mut buf)?;
 
-        println!("before inflate length: {}, buf: {:?}", length, &buf[0..10]);
-
         let mut decoder = ZlibDecoder::new(&buf[0..]);
         let mut decompressed_data = Vec::new();
         decoder.read_to_end(&mut decompressed_data)?;
-
-        println!("inflate data length: {}", decompressed_data.len());
 
         let mut reader = Self::new(decompressed_data)?;
         reader.set_byte_order(self.byte_order);
@@ -96,5 +93,59 @@ impl JtReader {
 
     pub fn read_exact(&mut self, buf: &mut [u8]) -> Result<()> {
         self.reader.read_exact(buf).map_err(Into::into)
+    }
+}
+
+pub struct BitBufferReader<'a> {
+    pub reader: &'a mut JtReader,
+    bit_buf: u64,
+    pub bits_remaining: usize,
+}
+
+impl<'a> BitBufferReader<'a> {
+    pub fn new(reader: &'a mut JtReader) -> Self {
+        Self {
+            reader,
+            bit_buf: 0,
+            bits_remaining: 0,
+        }
+    }
+
+    /// Obtain a bit buffer containing the needed number of bits.
+    pub fn read_u32(&mut self, the_bits_count: usize) -> Result<u32> {
+        if the_bits_count == 0 {
+            return Ok(0);
+        }
+
+        if the_bits_count > 32 {
+            bail!("read_u32: the_bits_count must be less than or equal to 32");
+        }
+
+        while self.bits_remaining < the_bits_count {
+            let size = 32;
+            let next_word = self.reader.read_u32()?;
+            self.bit_buf <<= size;
+            self.bit_buf |= next_word as u64;
+            self.bits_remaining += size;
+        }
+
+        let head = self.bits_remaining;
+        let tail = head - the_bits_count;
+        let suffix = 32 - the_bits_count;
+
+        let result = ((self.bit_buf >> tail) << suffix) as u32;
+
+        let result = result >> suffix;
+        // println!("result {}", result);
+        // bail!("test");
+
+        self.bits_remaining -= the_bits_count;
+
+        Ok(result)
+    }
+
+    pub fn clear(&mut self) {
+        self.bit_buf = 0;
+        self.bits_remaining = 0;
     }
 }

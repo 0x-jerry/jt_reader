@@ -1,4 +1,5 @@
-use anyhow::Result;
+use anyhow::{Result, bail};
+use mesh_tools::mesh;
 
 use crate::{
     jt_data::{
@@ -10,7 +11,7 @@ use crate::{
 
 #[derive(Debug)]
 pub struct JtTopoMeshTopologicallyCompressedLODData {
-    pub mesh_lod_data: JtTopoMeshLODData,
+    pub topo_mesh_lod_data: JtTopoMeshLODData,
     pub version: i16,
     pub data: JtTopologicallyCompressedRepData,
 }
@@ -19,12 +20,20 @@ impl JtData for JtTopoMeshTopologicallyCompressedLODData {
     fn read(reader: &mut JtReader) -> Result<Self> {
         let mesh_lod_data = JtTopoMeshLODData::read(reader)?;
         let version = reader.read_i16()?;
-        println!("JtTopoMeshTopologicallyCompressedLODData version {}", version);
+
+        if version != 1 && version != 2 {
+            bail!(
+                "Invalid JtTopoMeshTopologicallyCompressedLODData version {}",
+                version
+            );
+        }
+
+        log::info!("mesh_lod_data: {:#?}", mesh_lod_data);
 
         let data = JtTopologicallyCompressedRepData::read(reader)?;
 
         Ok(Self {
-            mesh_lod_data,
+            topo_mesh_lod_data: mesh_lod_data,
             version,
             data,
         })

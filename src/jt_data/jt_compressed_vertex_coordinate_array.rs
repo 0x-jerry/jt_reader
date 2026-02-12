@@ -3,6 +3,7 @@ use anyhow::Result;
 use crate::{
     jt_data::{JtData, jt_point_quantizer_data::JtPointQuantizerData},
     jt_data_type::jt_vec::JtVecU32,
+    jt_decode::jt_cdp2::JtCDP2Data,
     jt_reader::JtReader,
 };
 
@@ -22,16 +23,24 @@ impl JtData for JtCompressedVertexCoordinateArray {
         let mut result: Self = Default::default();
         result.unique_vertex_count = reader.read_i32()?;
         result.number_components = reader.read_u8()?;
+        // todo
         result.point_quantizer_data = JtPointQuantizerData::read(reader)?;
 
         if result.point_quantizer_data.quant_bits() == 0 {
             for _ in 0..result.number_components {
-                result.vertex_coord_exponents.push(JtVecU32::read(reader)?);
-                result.vertex_coord_mantissae.push(JtVecU32::read(reader)?);
+                // todo, fix type
+                // result.vertex_coord_exponents.push(JtVecU32::read(reader)?);
+                // result.vertex_coord_mantissae.push(JtVecU32::read(reader)?);
+
+                JtCDP2Data::read(reader)?;
+                JtCDP2Data::read(reader)?;
             }
         } else {
             for _ in 0..result.number_components {
-                result.vertex_coord_codes.push(JtVecU32::read(reader)?);
+                // todo, fix type
+                // result.vertex_coord_codes.push(JtVecU32::read(reader)?);
+
+                JtCDP2Data::read(reader)?;
             }
         }
 

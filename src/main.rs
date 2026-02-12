@@ -3,15 +3,12 @@ use anyhow::Result;
 use clap::{Parser, Subcommand};
 use std::fs::File;
 
-mod converter;
 mod jt_data;
 mod jt_data_type;
+mod jt_decode;
 mod jt_model;
-mod jt_parsing;
-mod mesh;
 mod jt_reader;
-
-use converter::convert_to_glb;
+mod mesh;
 
 use crate::jt_model::JtModel;
 
@@ -40,6 +37,8 @@ enum Commands {
 }
 
 fn main() -> Result<()> {
+    simple_logger::init()?;
+
     let cli = Cli::parse();
 
     match cli.command {
@@ -49,18 +48,23 @@ fn main() -> Result<()> {
             let jt_model = JtModel::new(file)?;
 
             let header = &jt_model.header;
-            println!("JT File Header:");
-            println!("  Version: {}", header.version);
-            println!("  Byte Order: {:?}", header.byte_order);
-            println!("  Empty Field: {}", header.reserved_field);
-            println!("  LSG Segment ID: {}", header.lsg_segment_id);
-            println!("  TOC Offset: {}", header.toc_offset);
+            log::info!("JT File Header:");
+            log::info!("  Version: {}", header.version.trim());
+            log::info!("  Major Version: {}", header.major_version);
+            log::info!("  Byte Order: {:?}", header.byte_order);
+            log::info!("  Empty Field: {}", header.reserved_field);
+            log::info!("  LSG Segment ID: {}", header.lsg_segment_id);
+            log::info!("  TOC Offset: {}", header.toc_offset);
 
-            println!("\nTable of Contents ({} entries):", jt_model.toc.len());
+            log::info!("\nTable of Contents ({} entries):", jt_model.toc.len());
             for (i, entry) in jt_model.toc.iter().take(10).enumerate() {
-                println!(
+                log::info!(
                     "[{}] ID: {}, Offset: {}, Length: {}, Attrs: 0b{:b}",
-                    i, entry.segment_id, entry.offset, entry.length, entry.attributes
+                    i,
+                    entry.segment_id,
+                    entry.offset,
+                    entry.length,
+                    entry.attributes
                 );
             }
         }
@@ -69,12 +73,16 @@ fn main() -> Result<()> {
 
             let mut jt_model = JtModel::new(file)?;
 
-            println!("Reading JT file...");
-            let meshes = jt_model.extract_meshes()?;
-
-            println!("Converting to GLB...");
-            convert_to_glb(&meshes, &output)?;
-            println!("Successfully wrote to {}", output);
+            if jt_model.header.major_version != 9 {
+                log::warn!(
+                    "Unsupported major version: {}",
+                    jt_model.header.major_version
+                );
+                log::warn!("Only major version 9 is supported.");
+            } else {
+                log::info!("Reading JT file...");
+                let _meshes = jt_model.extract_meshes()?;
+            }
         }
     }
 

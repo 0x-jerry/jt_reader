@@ -1,6 +1,9 @@
 use anyhow::Result;
 
-use crate::{jt_data::JtData, jt_data_type::jt_vec::JtVecU32, jt_reader::JtReader};
+use crate::{
+    jt_data::JtData, jt_data_type::jt_vec::JtVecU32, jt_decode::jt_cdp2::JtCDP2Data,
+    jt_reader::JtReader,
+};
 
 #[derive(Debug, Default)]
 pub struct JtCompressedVertexNormalArray {
@@ -26,14 +29,24 @@ impl JtData for JtCompressedVertexNormalArray {
 
         if result.quantization_bits == 0 {
             for _ in 0..result.number_components {
-                result.vertex_normal_exponents.push(JtVecU32::read(reader)?);
-                result.vertex_normal_mantissae.push(JtVecU32::read(reader)?);
+                // todo, fix type
+                // result.vertex_normal_exponents.push(JtVecU32::read(reader)?);
+                // result.vertex_normal_mantissae.push(JtVecU32::read(reader)?);
+
+                JtCDP2Data::read(reader)?;
+                JtCDP2Data::read(reader)?;
             }
         } else {
-            result.sextant_codes = JtVecU32::read(reader)?;
-            result.octant_codes = JtVecU32::read(reader)?;
-            result.theta_codes = JtVecU32::read(reader)?;
-            result.psi_codes = JtVecU32::read(reader)?;
+            // todo, fix type
+            // result.sextant_codes = JtVecU32::read(reader)?;
+            // result.octant_codes = JtVecU32::read(reader)?;
+            // result.theta_codes = JtVecU32::read(reader)?;
+            // result.psi_codes = JtVecU32::read(reader)?;
+
+            JtCDP2Data::read(reader)?;
+            JtCDP2Data::read(reader)?;
+            JtCDP2Data::read(reader)?;
+            JtCDP2Data::read(reader)?;
         }
 
         result.vertex_normal_hash = reader.read_i32()?;

@@ -1,3 +1,5 @@
+use anyhow::{Result, bail};
+
 #[derive(Debug)]
 pub enum SegmentType {
     None = 0,
@@ -19,8 +21,8 @@ pub enum SegmentType {
 }
 
 impl SegmentType {
-    pub fn new(segment_type: i32) -> Self {
-        return match segment_type {
+    pub fn from(segment_type: i32) -> Result<Self> {
+        let value = match segment_type {
             1 => Self::LogicalSceneGraph,
             2 => Self::JtBRep,
             3 => Self::PMIData,
@@ -36,8 +38,10 @@ impl SegmentType {
             14 => Self::ShapeLod7,
             15 => Self::ShapeLod8,
             16 => Self::ShapeLod9,
-            _ => SegmentType::None,
+            _ => bail!("Unsupported segment type: {}", segment_type),
         };
+
+        Ok(value)
     }
 
     pub fn is_shape(&self) -> bool {

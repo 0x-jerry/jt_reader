@@ -3,7 +3,7 @@ use anyhow::Result;
 use crate::{
     jt_data::{
         JtCompressedSegment, JtData, jt_logic_element_header::JtLogicElementHeaderZLib,
-        jt_lsg_element::JtLSGElement, jt_property_table_data::JtPropertyTableData,
+        jt_element::JtElement, jt_property_table_data::JtPropertyTableData,
     },
     jt_reader::JtReader,
 };
@@ -12,7 +12,7 @@ use crate::{
 pub struct JtLSGSegment {
     pub header: JtLogicElementHeaderZLib,
 
-    pub elements: Vec<JtLSGElement>,
+    pub elements: Vec<JtElement>,
     pub property_table: JtPropertyTableData,
 }
 
@@ -23,7 +23,7 @@ impl JtCompressedSegment for JtLSGSegment {
 impl JtLSGSegment {
     /// Return true if the end of elements marker is read.
     fn read_element(&mut self, reader: &mut JtReader) -> Result<bool> {
-        let element = JtLSGElement::read(reader)?;
+        let element = JtElement::read(reader)?;
 
         if element.is_end_marker_element() {
             return Ok(true);
@@ -48,8 +48,6 @@ impl JtData for JtLSGSegment {
         } else {
             reader
         };
-
-        println!("logic header data: {:?}", logic_header);
 
         // Read graph elements.
         while !result.read_element(reader)? {}
