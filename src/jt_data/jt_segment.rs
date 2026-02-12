@@ -5,7 +5,8 @@ use anyhow::Result;
 use crate::{
     jt_data::{
         JtData, jt_element::JtElement, jt_lsg_segment::JtLSGSegment,
-        jt_segment_header::JtSegmentHeader, jt_segment_type::SegmentType,
+        jt_meta_data_segment::JtMetaDataSegment, jt_segment_header::JtSegmentHeader,
+        jt_segment_type::SegmentType,
     },
     jt_reader::JtReader,
 };
@@ -13,6 +14,7 @@ use crate::{
 #[derive(Debug)]
 pub enum JtSegementValue {
     LSG(JtLSGSegment),
+    MetaData(JtMetaDataSegment),
     Element(JtElement),
 }
 
@@ -20,8 +22,7 @@ impl JtSegementValue {
     pub fn read(reader: &mut JtReader, segment_type: &SegmentType) -> Result<Self> {
         let value = match segment_type {
             SegmentType::LogicalSceneGraph => Self::LSG(JtLSGSegment::read(reader)?),
-            SegmentType::Shape
-            | SegmentType::ShapeLod0
+            SegmentType::ShapeLod0
             | SegmentType::ShapeLod1
             | SegmentType::ShapeLod2
             | SegmentType::ShapeLod3
@@ -31,6 +32,7 @@ impl JtSegementValue {
             | SegmentType::ShapeLod7
             | SegmentType::ShapeLod8
             | SegmentType::ShapeLod9 => Self::Element(JtElement::read(reader)?),
+            SegmentType::MetaData => Self::MetaData(JtMetaDataSegment::read(reader)?),
             _ => anyhow::bail!("Unsupported segment type: {:?}", segment_type),
         };
 

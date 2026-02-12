@@ -27,8 +27,6 @@ impl JtData for Int32ProbabilityContextV2 {
         result.number_value_bits = bit_buffer.read_u32(6)?;
         result.min_value = bit_buffer.read_u32(32)?;
 
-        log::info!("{:#?}", result);
-
         for _ in 0..result.probability_context_table_entry_count {
             let entry = Int32ProbabilityContextTableEntryV2::read(
                 &mut bit_buffer,

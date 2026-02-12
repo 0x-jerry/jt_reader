@@ -16,6 +16,8 @@ pub mod jt_compressed_vertex_flag_array;
 pub mod jt_compressed_vertex_normal_array;
 pub mod jt_compressed_vertex_texture_coordinate_array;
 pub mod jt_count_range;
+pub mod jt_date_property_value;
+pub mod jt_element;
 pub mod jt_element_header;
 pub mod jt_file_header;
 pub mod jt_floating_point_property_atom_element;
@@ -26,13 +28,14 @@ pub mod jt_instance_node_element;
 pub mod jt_late_loaded_property_atom_element;
 pub mod jt_lod_node_data;
 pub mod jt_logic_element_header;
-pub mod jt_element;
 pub mod jt_lsg_segment;
 pub mod jt_material_attribute_element;
 pub mod jt_meta_data_node_element;
+pub mod jt_meta_data_segment;
 pub mod jt_part_node_element;
 pub mod jt_partition_node_element;
 pub mod jt_point_quantizer_data;
+pub mod jt_property_proxy_meta_data_element;
 pub mod jt_property_table_data;
 pub mod jt_quantization_parameters;
 pub mod jt_range_lod_node_element;
@@ -62,8 +65,4 @@ pub trait JtData {
 
 pub trait JtObjectTypeID {
     const OBJECT_TYPE_ID: Uuid;
-}
-
-pub trait JtCompressedSegment {
-    const IS_COMPRESSED: bool;
 }

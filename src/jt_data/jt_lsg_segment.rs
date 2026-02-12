@@ -2,8 +2,8 @@ use anyhow::Result;
 
 use crate::{
     jt_data::{
-        JtCompressedSegment, JtData, jt_logic_element_header::JtLogicElementHeaderZLib,
-        jt_element::JtElement, jt_property_table_data::JtPropertyTableData,
+        JtData, jt_element::JtElement, jt_logic_element_header::JtLogicElementHeaderZLib,
+        jt_property_table_data::JtPropertyTableData,
     },
     jt_reader::JtReader,
 };
@@ -14,10 +14,6 @@ pub struct JtLSGSegment {
 
     pub elements: Vec<JtElement>,
     pub property_table: JtPropertyTableData,
-}
-
-impl JtCompressedSegment for JtLSGSegment {
-    const IS_COMPRESSED: bool = true;
 }
 
 impl JtLSGSegment {

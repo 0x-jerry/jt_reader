@@ -118,7 +118,7 @@ impl<'a> BitBufferReader<'a> {
         }
 
         if the_bits_count > 32 {
-            bail!("read_u32: the_bits_count must be less than or equal to 32");
+            bail!("read_u32: the_bits_count must be less than or equal to 32, {}", the_bits_count);
         }
 
         while self.bits_remaining < the_bits_count {

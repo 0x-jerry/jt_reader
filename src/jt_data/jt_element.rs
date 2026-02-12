@@ -3,7 +3,19 @@ use uuid::Uuid;
 
 use crate::{
     jt_data::{
-        JtData, JtObjectTypeID, jt_element_header::JtElementHeader, jt_floating_point_property_atom_element::JtFloatingPointPropertyAtomElement, jt_geometric_transform_attribute_element::JtGeometricTransformAttributeElement, jt_group_node_element::JtGroupNodeElement, jt_instance_node_element::JtInstanceNodeElement, jt_late_loaded_property_atom_element::JtLateLoadedPropertyAtomElement, jt_material_attribute_element::JtMaterialAttributeElement, jt_meta_data_node_element::JtMetaDataNodeElement, jt_part_node_element::JtPartNodeElement, jt_partition_node_element::JtPartitionNodeElement, jt_range_lod_node_element::JtRangeLODNodeElement, jt_string_property_atom_element::JtStringPropertyAtomElement, jt_tri_strip_set_shape_lod_element::JtTriStripSetShapeLODElement, jt_tri_strip_set_shape_node_element::JtTriStripSetShapeNodeElement
+        JtData, JtObjectTypeID, jt_element_header::JtElementHeader,
+        jt_floating_point_property_atom_element::JtFloatingPointPropertyAtomElement,
+        jt_geometric_transform_attribute_element::JtGeometricTransformAttributeElement,
+        jt_group_node_element::JtGroupNodeElement, jt_instance_node_element::JtInstanceNodeElement,
+        jt_late_loaded_property_atom_element::JtLateLoadedPropertyAtomElement,
+        jt_material_attribute_element::JtMaterialAttributeElement,
+        jt_meta_data_node_element::JtMetaDataNodeElement, jt_part_node_element::JtPartNodeElement,
+        jt_partition_node_element::JtPartitionNodeElement,
+        jt_property_proxy_meta_data_element::JtPropertyProxyMetaDataElement,
+        jt_range_lod_node_element::JtRangeLODNodeElement,
+        jt_string_property_atom_element::JtStringPropertyAtomElement,
+        jt_tri_strip_set_shape_lod_element::JtTriStripSetShapeLODElement,
+        jt_tri_strip_set_shape_node_element::JtTriStripSetShapeNodeElement,
     },
     jt_reader::JtReader,
 };
@@ -36,6 +48,9 @@ pub enum JtElementValue {
 
     // Other
     TriStripSetShapeLOD(JtTriStripSetShapeLODElement),
+
+    // Meta data
+    PropertyProxyMetaData(JtPropertyProxyMetaDataElement),
 }
 
 impl JtElementValue {
@@ -101,6 +116,11 @@ impl JtElementValue {
                 Self::TriStripSetShapeLOD(element)
             }
 
+            // Meta data
+            JtPropertyProxyMetaDataElement::OBJECT_TYPE_ID => {
+                let element = JtPropertyProxyMetaDataElement::read(reader)?;
+                Self::PropertyProxyMetaData(element)
+            }
             _ => Self::None,
         };
 
@@ -129,12 +149,12 @@ impl JtElement {
         result.length = reader.read_i32()?;
 
         result.header = JtElementHeader::read(reader)?;
-        log::trace!("length {}, reading {:?}", result.length, result.header);
 
         if result.is_end_marker_element() {
             return Ok(result);
         }
 
+        log::debug!("reading element: {:?}", result.header);
         result.value = JtElementValue::read(reader, result.header.object_type_id)?;
 
         if result.value.is_none() {

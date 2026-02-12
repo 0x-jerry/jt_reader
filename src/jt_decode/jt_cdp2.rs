@@ -24,8 +24,6 @@ impl JtCDP2Data {
 
         let codec_type = JtCodecType::from(reader.read_u8()?)?;
 
-        log::debug!("codec_type: {:?}", codec_type);
-
         if codec_type == JtCodecType::Chopper {
             let chop_bits = reader.read_u8()?;
 

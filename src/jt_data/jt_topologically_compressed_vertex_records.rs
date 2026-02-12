@@ -36,15 +36,10 @@ impl JtData for JtTopologicallyCompressedVertexRecords {
         if result.number_of_topological_vertices <= 0 {
             return Ok(result);
         }
-        log::debug!(
-            "number_of_topological_vertices: {}",
-            result.number_of_topological_vertices
-        );
 
         result.number_of_vertex_attributes = reader.read_i32()?;
 
         if result.vertex_bindings.vertex_coord_components() > 0 {
-            log::debug!("reading vertex_coord_component");
             result.vertex_coordinate_array = Some(JtCompressedVertexCoordinateArray::read(reader)?);
         }
 

@@ -28,8 +28,6 @@ impl JtData for JtTopoMeshTopologicallyCompressedLODData {
             );
         }
 
-        log::info!("mesh_lod_data: {:#?}", mesh_lod_data);
-
         let data = JtTopologicallyCompressedRepData::read(reader)?;
 
         Ok(Self {
